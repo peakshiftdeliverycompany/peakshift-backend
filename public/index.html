@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peakshift Delivery — Track Your Shipment</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f0f4f8; min-height: 100vh; }
+    header {
+      background: #1a1a2e; color: white;
+      padding: 20px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 1.5rem; }
+    header span { color: #e94560; font-weight: bold; }
+    header a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+    .hero {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white; text-align: center; padding: 60px 20px;
+    }
+    .hero h2 { font-size: 2rem; margin-bottom: 10px; }
+    .hero p { color: #aaa; margin-bottom: 30px; }
+    .search-box { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .search-box input {
+      padding: 14px 20px; width: 360px;
+      border-radius: 8px; border: none; font-size: 1rem; outline: none;
+    }
+    .search-box button {
+      padding: 14px 28px; background: #e94560; color: white;
+      border: none; border-radius: 8px; font-size: 1rem;
+      cursor: pointer; font-weight: bold;
+    }
+    .search-box button:hover { background: #c73652; }
+    .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    .result-card {
+      background: white; border-radius: 12px; padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: none;
+    }
+    .result-card.show { display: block; }
+    .status-badge {
+      display: inline-block; padding: 6px 16px;
+      border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-bottom: 20px;
+    }
+    .Pending { background: #fff3cd; color: #856404; }
+    .In-Transit { background: #cff4fc; color: #055160; }
+    .Delivered { background: #d1e7dd; color: #0a3622; }
+    .Failed { background: #f8d7da; color: #842029; }
+    .Picked-Up { background: #e2d9f3; color: #432874; }
+    .Out-for-Delivery { background: #d0f0ff; color: #0055aa; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .info-item label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
+    .info-item p { font-weight: 600; color: #1a1a2e; margin-top: 2px; }
+    .timeline { margin-top: 24px; }
+    .timeline h3 { font-size: 1rem; font-weight: bold; margin-bottom: 16px; color: #1a1a2e; }
+    .timeline-item { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
+    .dot { width: 14px; height: 14px; background: #e94560; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .dot.old { background: #ccc; }
+    .timeline-content p { font-weight: 600; font-size: 0.95rem; }
+    .timeline-content span { font-size: 0.8rem; color: #888; }
+    .error-msg { text-align: center; padding: 30px; color: #e94560; font-weight: bold; display: none; }
+    .error-msg.show { display: block; }
+    footer { text-align: center; padding: 30px; color: #888; font-size: 0.85rem; margin-top: 40px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🚚 <span>Peakshift</span> Delivery</h1>
+  <a href="/admin">Admin Panel →</a>
+</header>
+<div class="hero">
+  <h2>Track Your Shipment</h2>
+  <p>Enter your tracking number below to get real-time updates</p>
+  <div class="search-box">
+    <input type="text" id="trackInput" placeholder="e.g. PKSA3B9X2F1" />
+    <button onclick="trackShipment()">Track Now</button>
+  </div>
+</div>
+<div class="container">
+  <div class="error-msg" id="errorMsg">⚠️ Shipment not found. Please check your tracking number.</div>
+  <div class="result-card" id="resultCard">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <h2 id="trackNum" style="font-size:1.2rem; color:#1a1a2e;"></h2>
+      <span class="status-badge" id="statusBadge"></span>
+    </div>
+    <p id="estDelivery" style="color:#888; font-size:0.85rem; margin-bottom:20px;"></p>
+    <div class="info-grid">
+      <div class="info-item"><label>Sender</label><p id="senderName"></p></div>
+      <div class="info-item"><label>Receiver</label><p id="receiverName"></p></div>
+      <div class="info-item"><label>Origin</label><p id="origin"></p></div>
+      <div class="info-item"><label>Destination</label><p id="destination"></p></div>
+      <div class="info-item"><label>Weight</label><p id="weight"></p></div>
+      <div class="info-item"><label>Description</label><p id="description"></p></div>
+    </div>
+    <div class="timeline">
+      <h3>📍 Tracking History</h3>
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+<footer>© 2026 Peakshift Delivery Company. All rights reserved.</footer>
+<script>
+  async function trackShipment() {
+    const num = document.getElementById('trackInput').value.trim();
+    if (!num) return alert('Please enter a tracking number');
+    document.getElementById('resultCard').classList.remove('show');
+    document.getElementById('errorMsg').classList.remove('show');
+    try {
+      const res = await fetch(`/api/shipments/track/${num}`);
+      const data = await res.json();
+      if (!data.success) { document.getElementById('errorMsg').classList.add('show'); return; }
+      const s = data.shipment;
+      const statusClass = s.status.replace(/ /g, '-');
+      document.getElementById('trackNum').textContent = '📦 ' + s.trackingNumber;
+      document.getElementById('statusBadge').textContent = s.status;
+      document.getElementById('statusBadge').className = 'status-badge ' + statusClass;
+      document.getElementById('estDelivery').textContent = s.estimatedDelivery ? '🗓 Estimated Delivery: ' + s.estimatedDelivery : '';
+      document.getElementById('senderName').textContent = s.senderName;
+      document.getElementById('receiverName').textContent = s.receiverName;
+      document.getElementById('origin').textContent = s.origin;
+      document.getElementById('destination').textContent = s.destination;
+      document.getElementById('weight').textContent = s.weight || '—';
+      document.getElementById('description').textContent = s.description || '—';
+      const history = [...s.history].reverse();
+      document.getElementById('historyList').innerHTML = history.map((h, i) => `
+        <div class="timeline-item">
+          <div class="dot ${i > 0 ? 'old' : ''}"></div>
+          <div class="timeline-content">
+            <p>${h.status} ${h.location ? '— ' + h.location : ''}</p>
+            <span>${h.note || ''} &nbsp;•&nbsp; ${new Date(h.timestamp).toLocaleString()}</span>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('resultCard').classList.add('show');
+    } catch (err) {
+      document.getElementById('errorMsg').classList.add('show');
+    }
+  }
+  document.getElementById('trackInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') trackShipment();
+  });
+</script>
+</body>
+</html>

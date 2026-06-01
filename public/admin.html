@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peakshift Admin Panel</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f0f4f8; }
+    header {
+      background: #1a1a2e; color: white;
+      padding: 18px 30px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    header h1 { font-size: 1.3rem; }
+    header span { color: #e94560; }
+    header a { color: #aaa; font-size: 0.85rem; text-decoration: none; }
+    .login-overlay {
+      position: fixed; inset: 0; background: #1a1a2e;
+      display: flex; align-items: center; justify-content: center; z-index: 999;
+    }
+    .login-box {
+      background: white; padding: 40px; border-radius: 12px;
+      text-align: center; width: 340px;
+    }
+    .login-box h2 { margin-bottom: 6px; color: #1a1a2e; }
+    .login-box p { color: #888; font-size: 0.85rem; margin-bottom: 20px; }
+    .login-box input {
+      width: 100%; padding: 12px; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 1rem; margin-bottom: 14px; outline: none;
+    }
+    .login-box button {
+      width: 100%; padding: 12px; background: #e94560;
+      color: white; border: none; border-radius: 8px;
+      font-size: 1rem; cursor: pointer; font-weight: bold;
+    }
+    .login-box button:hover { background: #c73652; }
+    .login-error { color: #e94560; font-size: 0.85rem; margin-top: 10px; display: none; }
+    .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+    .card {
+      background: white; border-radius: 12px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 28px;
+    }
+    .card h2 { color: #1a1a2e; margin-bottom: 18px; font-size: 1.1rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid input, .form-grid select {
+      padding: 10px 14px; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 0.95rem; outline: none; width: 100%;
+    }
+    .form-grid input:focus, .form-grid select:focus { border-color: #e94560; }
+    .btn {
+      padding: 12px 24px; background: #1a1a2e; color: white;
+      border: none; border-radius: 8px; cursor: pointer;
+      font-size: 0.95rem; font-weight: bold; margin-top: 14px;
+    }
+    .btn:hover { background: #e94560; }
+    .btn-green { background: #198754; }
+    .btn-green:hover { background: #146c43; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { background: #1a1a2e; color: white; padding: 12px 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    tr:hover td { background: #f9f9f9; }
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 12px; font-size: 0.78rem; font-weight: bold;
+    }
+    .Pending { background: #fff3cd; color: #856404; }
+    .In-Transit { background: #cff4fc; color: #055160; }
+    .Delivered { background: #d1e7dd; color: #0a3622; }
+    .Failed { background: #f8d7da; color: #842029; }
+    .Picked-Up { background: #e2d9f3; color: #432874; }
+    .Out-for-Delivery { background: #d0f0ff; color: #0055aa; }
+    .actions { display: flex; gap: 6px; }
+    .actions button {
+      padding: 5px 10px; font-size: 0.8rem;
+      border: none; border-radius: 6px; cursor: pointer;
+    }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: white; border-radius: 12px;
+      padding: 28px; width: 420px; max-width: 95vw;
+    }
+    .modal h3 { margin-bottom: 16px; color: #1a1a2e; }
+    .modal input, .modal select {
+      width: 100%; padding: 10px; border: 1px solid #ddd;
+      border-radius: 8px; margin-bottom: 12px; font-size: 0.95rem; outline: none;
+    }
+    .modal .btn-row { display: flex; gap: 10px; justify-content: flex-end; }
+    .success-msg { color: green; font-size: 0.85rem; margin-top: 10px; display: none; }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- Login Gate -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h2>🔐 Admin Login</h2>
+    <p>Peakshift Delivery Company</p>
+    <input type="password" id="adminPass" placeholder="Enter admin password" />
+    <button onclick="checkLogin()">Login</button>
+    <p class="login-error" id="loginErr">❌ Incorrect password</p>
+  </div>
+</div>
+
+<header>
+  <h1>🚚 <span>Peakshift</span> Admin Panel</h1>
+  <a href="/">← Customer View</a>
+</header>
+
+<div class="container">
+  <!-- Create Shipment -->
+  <div class="card">
+    <h2>➕ Create New Shipment</h2>
+    <div class="form-grid">
+      <input type="text" id="senderName" placeholder="Sender Name *" />
+      <input type="text" id="senderPhone" placeholder="Sender Phone" />
+      <input type="text" id="receiverName" placeholder="Receiver Name *" />
+      <input type="text" id="receiverPhone" placeholder="Receiver Phone" />
+      <input type="email" id="receiverEmail" placeholder="Receiver Email" />
+      <input type="text" id="weight" placeholder="Weight (e.g. 2kg)" />
+      <input type="text" id="origin" placeholder="Origin City *" />
+      <input type="text" id="destination" placeholder="Destination City *" />
+      <input type="text" id="estimatedDelivery" placeholder="Estimated Delivery (e.g. June 10, 2026)" />
+      <input type="text" id="description" placeholder="Package Description" />
+    </div>
+    <button class="btn" onclick="createShipment()">Create Shipment</button>
+    <p class="success-msg" id="createSuccess">✅ Shipment created successfully!</p>
+    <p id="newTrackNum" style="margin-top:8px; font-weight:bold; color:#e94560; font-size:1.1rem;"></p>
+  </div>
+
+  <!-- Shipment List -->
+  <div class="card">
+    <h2>📦 All Shipments</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tracking #</th>
+          <th>Sender</th>
+          <th>Receiver</th>
+          <th>Route</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="shipmentsTable">
+        <tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Update Modal -->
+<div class="modal-overlay" id="updateModal">
+  <div class="modal">
+    <h3>🔄 Update Shipment Status</h3>
+    <input type="hidden" id="updateId" />
+    <select id="updateStatus">
+      <option>Pending</option>
+      <option>Picked Up</option>
+      <option>In Transit</option>
+      <option>Out for Delivery</option>
+      <option>Delivered</option>
+      <option>Failed</option>
+    </select>
+    <input type="text" id="updateLocation" placeholder="Current Location (e.g. Lagos Hub)" />
+    <input type="text" id="updateNote" placeholder="Note (e.g. Package cleared customs)" />
+    <div class="btn-row">
+      <button class="btn" style="background:#888;" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="updateShipment()">Update</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PASSWORD = 'peakshift2026';
+
+  function checkLogin() {
+    const pass = document.getElementById('adminPass').value;
+    if (pass === ADMIN_PASSWORD) {
+      document.getElementById('loginOverlay').style.display = 'none';
+      loadShipments();
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  }
+
+  document.getElementById('adminPass').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkLogin();
+  });
+
+  async function createShipment() {
+    const body = {
+      senderName:        document.getElementById('senderName').value,
+      senderPhone:       document.getElementById('senderPhone').value,
+      receiverName:      document.getElementById('receiverName').value,
+      receiverPhone:     document.getElementById('receiverPhone').value,
+      receiverEmail:     document.getElementById('receiverEmail').value,
+      weight:            document.getElementById('weight').value,
+      origin:            document.getElementById('origin').value,
+      destination:       document.getElementById('destination').value,
+      estimatedDelivery: document.getElementById('estimatedDelivery').value,
+      description:       document.getElementById('description').value,
+    };
+    if (!body.senderName || !body.receiverName || !body.origin || !body.destination) {
+      return alert('Please fill in all required fields (*)');
+    }
+    const res = await fetch('/api/shipments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('createSuccess').style.display = 'block';
+      document.getElementById('newTrackNum').textContent = '📋 Tracking Number: ' + data.shipment.trackingNumber;
+      document.querySelectorAll('.form-grid input').forEach(i => i.value = '');
+      loadShipments();
+    } else {
+      alert('Error: ' + data.message);
+    }
+  }
+
+  async function loadShipments() {
+    const res = await fetch('/api/shipments');
+    const data = await res.json();
+    const tbody = document.getElementById('shipmentsTable');
+    if (!data.shipments.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">No shipments yet. Create one above!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.shipments.map(s => {
+      const statusClass = s.status.replace(/ /g, '-');
+      const date = new Date(s.createdAt).toLocaleDateString();
+      return `
+        <tr>
+          <td><strong>${s.trackingNumber}</strong></td>
+          <td>${s.senderName}</td>
+          <td>${s.receiverName}</td>
+          <td>${s.origin} → ${s.destination}</td>
+          <td><span class="badge ${statusClass}">${s.status}</span></td>
+          <td>${date}</td>
+          <td>
+            <div class="actions">
+              <button style="background:#1a1a2e;color:white;" onclick="openUpdate('${s._id}','${s.status}')">Update</button>
+              <button style="background:#e94560;color:white;" onclick="deleteShipment('${s._id}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function openUpdate(id, currentStatus) {
+    document.getElementById('updateId').value = id;
+    document.getElementById('updateStatus').value = currentStatus;
+    document.getElementById('updateLocation').value = '';
+    document.getElementById('updateNote').value = '';
+    document.getElementById('updateModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('updateModal').classList.remove('show');
+  }
+
+  async function updateShipment() {
+    const id = document.getElementById('updateId').value;
+    const body = {
+      status:   document.getElementById('updateStatus').value,
+      location: document.getElementById('updateLocation').value,
+      note:     document.getElementById('updateNote').value,
+    };
+    const res = await fetch(`/api/shipments/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.success) { closeModal(); loadShipments(); }
+    else alert('Error: ' + data.message);
+  }
+
+  async function deleteShipment(id) {
+    if (!confirm('Are you sure you want to delete this shipment?')) return;
+    await fetch(`/api/shipments/${id}`, { method: 'DELETE' });
+    loadShipments();
+  }
+</script>
+</body>
+</html>
