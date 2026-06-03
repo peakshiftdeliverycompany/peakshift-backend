@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
         });
         await shipment.save();
 
-        // ✅ Send automatic email to receiver
+        // ✅ TRIGGER EMAIL
         if (shipment.receiverEmail) {
             const sendShipmentEmail = req.app.get('sendShipmentEmail');
             if (sendShipmentEmail) await sendShipmentEmail(shipment);
