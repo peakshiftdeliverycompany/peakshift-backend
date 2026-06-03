@@ -3,26 +3,17 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 // ─── EMAIL SETUP ─────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendShipmentEmail(shipment) {
     try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_FROM,
+        await resend.emails.send({
+            from: 'Peakshift Delivery <onboarding@resend.dev>',
             to: shipment.receiverEmail,
-            subject: `📦 Your Package Has Been Shipped — Peakshift Delivery`,
+            subject: '📦 Your Package Has Been Shipped — Peakshift Delivery',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9f9f9;">
                     <div style="background: #1a1a2e; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -30,14 +21,14 @@ async function sendShipmentEmail(shipment) {
                     </div>
                     <div style="background: white; padding: 35px; border-radius: 0 0 8px 8px; line-height: 1.9; color: #333;">
                         <p>Hello <strong>${shipment.receiverName}</strong>,</p>
-                        <p>Your package from <strong>${shipment.senderName}</strong> has just been shipped and is on its way.</p>
+                        <p>Your package from <strong>${shipment.senderName}</strong> has just been shipped and is on its way to you.</p>
                         <p>Here is your tracking code:</p>
                         <div style="background: #1a1a2e; color: #e63946; font-size: 24px; font-weight: bold;
                                     text-align: center; padding: 18px; border-radius: 8px;
                                     letter-spacing: 4px; margin: 20px 0;">
                             ${shipment.trackingNumber}
                         </div>
-                        <p>You can track your package on the official website:</p>
+                        <p>Track your package on our website:</p>
                         <div style="text-align: center; margin: 25px 0;">
                             <a href="https://peakshift-delivery.onrender.com"
                                style="background: #e63946; color: white; padding: 14px 35px;
@@ -46,7 +37,7 @@ async function sendShipmentEmail(shipment) {
                                 Track My Package
                             </a>
                         </div>
-                        <p>For complaints or enquiries, contact us at
+                        <p>For enquiries or complaints, contact us at
                             <a href="mailto:supportpeakdelivery@gmail.com" style="color: #e63946;">
                                 supportpeakdelivery@gmail.com
                             </a>

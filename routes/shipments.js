@@ -11,11 +11,9 @@ function generateTrackingNumber() {
     return 'PKS' + code;
 }
 
+// CREATE shipment
 router.post('/', async (req, res) => {
     try {
-        console.log('📦 POST /api/shipments hit');
-        console.log('📧 receiverEmail received:', req.body.receiverEmail);
-
         const trackingNumber = generateTrackingNumber();
         const shipment = new Shipment({
             ...req.body,
@@ -27,24 +25,19 @@ router.post('/', async (req, res) => {
             }]
         });
         await shipment.save();
-        console.log('✅ Shipment saved to DB');
 
         if (shipment.receiverEmail) {
-            console.log('📧 Attempting to send email to:', shipment.receiverEmail);
             const sendShipmentEmail = req.app.get('sendShipmentEmail');
-            console.log('📧 sendShipmentEmail function found:', !!sendShipmentEmail);
             if (sendShipmentEmail) await sendShipmentEmail(shipment);
-        } else {
-            console.log('⚠️ No receiverEmail — email skipped');
         }
 
         res.status(201).json({ success: true, shipment });
     } catch (err) {
-        console.error('❌ Error creating shipment:', err.message);
         res.status(400).json({ success: false, message: err.message });
     }
 });
 
+// GET all shipments
 router.get('/', async (req, res) => {
     try {
         const shipments = await Shipment.find().sort({ createdAt: -1 });
@@ -54,6 +47,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+// TRACK by tracking number
 router.get('/track/:trackingNumber', async (req, res) => {
     try {
         const shipment = await Shipment.findOne({
@@ -67,6 +61,7 @@ router.get('/track/:trackingNumber', async (req, res) => {
     }
 });
 
+// UPDATE shipment status
 router.put('/:id', async (req, res) => {
     try {
         const { status, location, note } = req.body;
@@ -89,6 +84,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// DELETE shipment
 router.delete('/:id', async (req, res) => {
     try {
         await Shipment.findByIdAndDelete(req.params.id);
