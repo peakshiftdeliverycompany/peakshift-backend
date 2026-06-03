@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Shipment = require('../models/Shipment');
 
-// Auto-generate tracking number
 function generateTrackingNumber() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
@@ -12,9 +11,11 @@ function generateTrackingNumber() {
     return 'PKS' + code;
 }
 
-// CREATE shipment (admin)
 router.post('/', async (req, res) => {
     try {
+        console.log('📦 POST /api/shipments hit');
+        console.log('📧 receiverEmail received:', req.body.receiverEmail);
+
         const trackingNumber = generateTrackingNumber();
         const shipment = new Shipment({
             ...req.body,
@@ -26,20 +27,24 @@ router.post('/', async (req, res) => {
             }]
         });
         await shipment.save();
+        console.log('✅ Shipment saved to DB');
 
-        // ✅ TRIGGER EMAIL
         if (shipment.receiverEmail) {
+            console.log('📧 Attempting to send email to:', shipment.receiverEmail);
             const sendShipmentEmail = req.app.get('sendShipmentEmail');
+            console.log('📧 sendShipmentEmail function found:', !!sendShipmentEmail);
             if (sendShipmentEmail) await sendShipmentEmail(shipment);
+        } else {
+            console.log('⚠️ No receiverEmail — email skipped');
         }
 
         res.status(201).json({ success: true, shipment });
     } catch (err) {
+        console.error('❌ Error creating shipment:', err.message);
         res.status(400).json({ success: false, message: err.message });
     }
 });
 
-// GET all shipments (admin)
 router.get('/', async (req, res) => {
     try {
         const shipments = await Shipment.find().sort({ createdAt: -1 });
@@ -49,7 +54,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// TRACK by tracking number (customer)
 router.get('/track/:trackingNumber', async (req, res) => {
     try {
         const shipment = await Shipment.findOne({
@@ -63,7 +67,6 @@ router.get('/track/:trackingNumber', async (req, res) => {
     }
 });
 
-// UPDATE shipment status (admin)
 router.put('/:id', async (req, res) => {
     try {
         const { status, location, note } = req.body;
@@ -86,7 +89,6 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// DELETE shipment (admin)
 router.delete('/:id', async (req, res) => {
     try {
         await Shipment.findByIdAndDelete(req.params.id);
