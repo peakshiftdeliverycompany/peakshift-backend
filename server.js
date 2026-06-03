@@ -1,3 +1,11 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
+const nodemailer = require('nodemailer');
+
+// ─── EMAIL SETUP ─────────────────────────────────────────────
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -8,6 +16,7 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 });
+
 async function sendShipmentEmail(shipment) {
     try {
         await transporter.sendMail({
@@ -21,14 +30,14 @@ async function sendShipmentEmail(shipment) {
                     </div>
                     <div style="background: white; padding: 35px; border-radius: 0 0 8px 8px; line-height: 1.9; color: #333;">
                         <p>Hello <strong>${shipment.receiverName}</strong>,</p>
-                        <p>Your package from <strong>${shipment.senderName}</strong> has just been shipped. It's now on its way.</p>
+                        <p>Your package from <strong>${shipment.senderName}</strong> has just been shipped and is on its way.</p>
                         <p>Here is your tracking code:</p>
                         <div style="background: #1a1a2e; color: #e63946; font-size: 24px; font-weight: bold;
                                     text-align: center; padding: 18px; border-radius: 8px;
                                     letter-spacing: 4px; margin: 20px 0;">
                             ${shipment.trackingNumber}
                         </div>
-                        <p>You can log in to the official website to see your package details:</p>
+                        <p>You can track your package on the official website:</p>
                         <div style="text-align: center; margin: 25px 0;">
                             <a href="https://peakshift-delivery.onrender.com"
                                style="background: #e63946; color: white; padding: 14px 35px;
@@ -37,11 +46,10 @@ async function sendShipmentEmail(shipment) {
                                 Track My Package
                             </a>
                         </div>
-                        <p>Please reach out to us at
+                        <p>For complaints or enquiries, contact us at
                             <a href="mailto:supportpeakdelivery@gmail.com" style="color: #e63946;">
                                 supportpeakdelivery@gmail.com
                             </a>
-                            for any complaints.
                         </p>
                         <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
                         <p style="color: #aaa; font-size: 12px; text-align: center;">
@@ -60,7 +68,6 @@ async function sendShipmentEmail(shipment) {
 
 const app = express();
 
-// ✅ This line makes the email function available to routes
 app.set('sendShipmentEmail', sendShipmentEmail);
 
 app.use(cors());
