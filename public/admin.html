@@ -1,105 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Peakshift Admin Panel</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background: #f0f4f8; }
-    header {
-      background: #1a1a2e; color: white;
-      padding: 18px 30px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    header h1 { font-size: 1.3rem; }
-    header span { color: #e94560; }
-    header a { color: #aaa; font-size: 0.85rem; text-decoration: none; }
-    .login-overlay {
-      position: fixed; inset: 0; background: #1a1a2e;
-      display: flex; align-items: center; justify-content: center; z-index: 999;
-    }
-    .login-box {
-      background: white; padding: 40px; border-radius: 12px;
-      text-align: center; width: 340px;
-    }
-    .login-box h2 { margin-bottom: 6px; color: #1a1a2e; }
-    .login-box p { color: #888; font-size: 0.85rem; margin-bottom: 20px; }
-    .login-box input {
-      width: 100%; padding: 12px; border: 1px solid #ddd;
-      border-radius: 8px; font-size: 1rem; margin-bottom: 14px; outline: none;
-    }
-    .login-box button {
-      width: 100%; padding: 12px; background: #e94560;
-      color: white; border: none; border-radius: 8px;
-      font-size: 1rem; cursor: pointer; font-weight: bold;
-    }
-    .login-box button:hover { background: #c73652; }
-    .login-error { color: #e94560; font-size: 0.85rem; margin-top: 10px; display: none; }
-    .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-    .card {
-      background: white; border-radius: 12px; padding: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 28px;
-    }
-    .card h2 { color: #1a1a2e; margin-bottom: 18px; font-size: 1.1rem; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .form-grid input, .form-grid select {
-      padding: 10px 14px; border: 1px solid #ddd;
-      border-radius: 8px; font-size: 0.95rem; outline: none; width: 100%;
-    }
-    .form-grid input:focus, .form-grid select:focus { border-color: #e94560; }
-    .btn {
-      padding: 12px 24px; background: #1a1a2e; color: white;
-      border: none; border-radius: 8px; cursor: pointer;
-      font-size: 0.95rem; font-weight: bold; margin-top: 14px;
-    }
-    .btn:hover { background: #e94560; }
-    .btn-green { background: #198754; }
-    .btn-green:hover { background: #146c43; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    th { background: #1a1a2e; color: white; padding: 12px 10px; text-align: left; }
-    td { padding: 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
-    tr:hover td { background: #f9f9f9; }
-    .badge {
-      display: inline-block; padding: 3px 10px;
-      border-radius: 12px; font-size: 0.78rem; font-weight: bold;
-    }
-    .Pending { background: #fff3cd; color: #856404; }
-    .In-Transit { background: #cff4fc; color: #055160; }
-    .Delivered { background: #d1e7dd; color: #0a3622; }
-    .Failed { background: #f8d7da; color: #842029; }
-    .Picked-Up { background: #e2d9f3; color: #432874; }
-    .Out-for-Delivery { background: #d0f0ff; color: #0055aa; }
-    .actions { display: flex; gap: 6px; }
-    .actions button {
-      padding: 5px 10px; font-size: 0.8rem;
-      border: none; border-radius: 6px; cursor: pointer;
-    }
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      display: none; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-overlay.show { display: flex; }
-    .modal {
-      background: white; border-radius: 12px;
-      padding: 28px; width: 420px; max-width: 95vw;
-    }
-    .modal h3 { margin-bottom: 16px; color: #1a1a2e; }
-    .modal input, .modal select {
-      width: 100%; padding: 10px; border: 1px solid #ddd;
-      border-radius: 8px; margin-bottom: 12px; font-size: 0.95rem; outline: none;
-    }
-    .modal .btn-row { display: flex; gap: 10px; justify-content: flex-end; }
-    .success-msg { color: green; font-size: 0.85rem; margin-top: 10px; display: none; }
-    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Peakshift Admin Panel</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+body { background: #f0f4f8; }
+header {
+  background: #1a1a2e; color: white;
+  padding: 18px 30px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+header h1 { font-size: 1.3rem; }
+header span { color: #e94560; }
+header a { color: #aaa; font-size: 0.85rem; text-decoration: none; }
+.login-overlay {
+  position: fixed; inset: 0; background: #1a1a2e;
+  display: flex; align-items: center; justify-content: center; z-index: 999;
+}
+.login-box {
+  background: white; padding: 40px; border-radius: 12px;
+  text-align: center; width: 340px;
+}
+.login-box h2 { margin-bottom: 6px; color: #1a1a2e; }
+.login-box p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+.login-box input {
+  width: 100%; padding: 12px; border: 1px solid #ddd;
+  border-radius: 8px; font-size: 1rem; margin-bottom: 14px;
+}
+.login-box button {
+  width: 100%; padding: 12px; background: #e94560; color: white;
+  border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;
+}
+.login-box button:hover { background: #c73652; }
+.login-error { color: #e94560; font-size: 0.85rem; margin-top: 10px; display: none; }
+.container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+.card {
+  background: white; border-radius: 12px;
+  padding: 24px; margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.card h2 { margin-bottom: 16px; color: #1a1a2e; font-size: 1.1rem; }
+.form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 16px;
+}
+.form-grid input {
+  padding: 10px 14px; border: 1px solid #ddd;
+  border-radius: 8px; font-size: 0.95rem; width: 100%;
+}
+.btn {
+  padding: 11px 28px; background: #e94560; color: white;
+  border: none; border-radius: 8px; font-size: 0.95rem; cursor: pointer;
+}
+.btn:hover { background: #c73652; }
+.btn-green { background: #198754; }
+.btn-green:hover { background: #146c43; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th { background: #1a1a2e; color: white; padding: 12px 10px; text-align: left; }
+td { padding: 11px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+tr:hover td { background: #fafafa; }
+.badge {
+  padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+}
+.Pending          { background: #fff3cd; color: #856404; }
+.Processing       { background: #cfe2ff; color: #084298; }
+.In-Transit       { background: #e2d9f3; color: #432874; }
+.Shipped          { background: #d0f0ff; color: #0055aa; }
+.Arrived          { background: #d1fae5; color: #065f46; }
+.Ready-for-Delivery { background: #fef9c3; color: #854d0e; }
+.Out-for-Delivery { background: #fed7aa; color: #9a3412; }
+.Delivered        { background: #d1e7dd; color: #0a3622; }
+.Failed           { background: #f8d7da; color: #842029; }
+.actions { display: flex; gap: 6px; }
+.actions button {
+  padding: 5px 10px; font-size: 0.8rem;
+  border: none; border-radius: 6px; cursor: pointer;
+}
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: none; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: white; border-radius: 12px;
+  padding: 28px; width: 420px; max-width: 95vw;
+}
+.modal h3 { margin-bottom: 16px; color: #1a1a2e; }
+.modal input, .modal select {
+  width: 100%; padding: 10px 14px; border: 1px solid #ddd;
+  border-radius: 8px; font-size: 0.95rem; margin-bottom: 12px;
+}
+.btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+.success-msg { color: #198754; font-size: 0.9rem; margin-top: 12px; display: none; }
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  table { font-size: 0.78rem; }
+}
+</style>
 </head>
 <body>
 
-<!-- Login Gate -->
+<!-- Login Overlay -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
-    <h2>🔐 Admin Login</h2>
+    <h2>Admin Login</h2>
     <p>Peakshift Delivery Company</p>
     <input type="password" id="adminPass" placeholder="Enter admin password" />
     <button onclick="checkLogin()">Login</button>
@@ -109,28 +115,29 @@
 
 <header>
   <h1>🚚 <span>Peakshift</span> Admin Panel</h1>
-  <a href="/">← Customer View</a>
+  <a href="/">↩ Customer View</a>
 </header>
 
 <div class="container">
+
   <!-- Create Shipment -->
   <div class="card">
     <h2>➕ Create New Shipment</h2>
     <div class="form-grid">
-      <input type="text" id="senderName" placeholder="Sender Name *" />
-      <input type="text" id="senderPhone" placeholder="Sender Phone" />
-      <input type="text" id="receiverName" placeholder="Receiver Name *" />
-      <input type="text" id="receiverPhone" placeholder="Receiver Phone" />
-      <input type="email" id="receiverEmail" placeholder="Receiver Email" />
-      <input type="text" id="weight" placeholder="Weight (e.g. 2kg)" />
-      <input type="text" id="origin" placeholder="Origin City *" />
-      <input type="text" id="destination" placeholder="Destination City *" />
-      <input type="text" id="estimatedDelivery" placeholder="Estimated Delivery (e.g. June 10, 2026)" />
-      <input type="text" id="description" placeholder="Package Description" />
+      <input type="text"  id="senderName"        placeholder="Sender Name *" />
+      <input type="text"  id="senderPhone"        placeholder="Sender Phone" />
+      <input type="text"  id="receiverName"       placeholder="Receiver Name *" />
+      <input type="text"  id="receiverPhone"      placeholder="Receiver Phone" />
+      <input type="email" id="receiverEmail"      placeholder="Receiver Email" />
+      <input type="text"  id="weight"             placeholder="Weight (e.g. 2kg)" />
+      <input type="text"  id="origin"             placeholder="Origin City *" />
+      <input type="text"  id="destination"        placeholder="Destination City *" />
+      <input type="text"  id="estimatedDelivery"  placeholder="Estimated Delivery (e.g. 3 days)" />
+      <input type="text"  id="description"        placeholder="Package Description" />
     </div>
     <button class="btn" onclick="createShipment()">Create Shipment</button>
     <p class="success-msg" id="createSuccess">✅ Shipment created successfully!</p>
-    <p id="newTrackNum" style="margin-top:8px; font-weight:bold; color:#e94560; font-size:1.1rem;"></p>
+    <p id="newTrackNum" style="margin-top:8px; font-weight:bold; color:#e94560;"></p>
   </div>
 
   <!-- Shipment List -->
@@ -153,23 +160,26 @@
       </tbody>
     </table>
   </div>
+
 </div>
 
 <!-- Update Modal -->
 <div class="modal-overlay" id="updateModal">
   <div class="modal">
-    <h3>🔄 Update Shipment Status</h3>
-    <input type="hidden" id="updateId" />
+    <h3>Update Shipment Status</h3>
+    <input type="hidden" id="updateId">
     <select id="updateStatus">
       <option>Pending</option>
-      <option>Picked Up</option>
+      <option>Processing</option>
       <option>In Transit</option>
+      <option>Shipped</option>
+      <option>Arrived</option>
+      <option>Ready for Delivery</option>
       <option>Out for Delivery</option>
       <option>Delivered</option>
-      <option>Failed</option>
     </select>
-    <input type="text" id="updateLocation" placeholder="Current Location (e.g. Lagos Hub)" />
-    <input type="text" id="updateNote" placeholder="Note (e.g. Package cleared customs)" />
+    <input type="text" id="updateLocation" placeholder="Current Location (e.g. Lagos)">
+    <input type="text" id="updateNote"     placeholder="Note (e.g. Package cleared customs)">
     <div class="btn-row">
       <button class="btn" style="background:#888;" onclick="closeModal()">Cancel</button>
       <button class="btn btn-green" onclick="updateShipment()">Update</button>
@@ -196,16 +206,16 @@
 
   async function createShipment() {
     const body = {
-      senderName:        document.getElementById('senderName').value,
-      senderPhone:       document.getElementById('senderPhone').value,
-      receiverName:      document.getElementById('receiverName').value,
-      receiverPhone:     document.getElementById('receiverPhone').value,
-      receiverEmail:     document.getElementById('receiverEmail').value,
-      weight:            document.getElementById('weight').value,
-      origin:            document.getElementById('origin').value,
-      destination:       document.getElementById('destination').value,
-      estimatedDelivery: document.getElementById('estimatedDelivery').value,
-      description:       document.getElementById('description').value,
+      senderName:       document.getElementById('senderName').value,
+      senderPhone:      document.getElementById('senderPhone').value,
+      receiverName:     document.getElementById('receiverName').value,
+      receiverPhone:    document.getElementById('receiverPhone').value,
+      receiverEmail:    document.getElementById('receiverEmail').value,
+      weight:           document.getElementById('weight').value,
+      origin:           document.getElementById('origin').value,
+      destination:      document.getElementById('destination').value,
+      estimatedDelivery:document.getElementById('estimatedDelivery').value,
+      description:      document.getElementById('description').value,
     };
     if (!body.senderName || !body.receiverName || !body.origin || !body.destination) {
       return alert('Please fill in all required fields (*)');
@@ -218,8 +228,11 @@
     const data = await res.json();
     if (data.success) {
       document.getElementById('createSuccess').style.display = 'block';
-      document.getElementById('newTrackNum').textContent = '📋 Tracking Number: ' + data.shipment.trackingNumber;
-      document.querySelectorAll('.form-grid input').forEach(i => i.value = '');
+      document.getElementById('newTrackNum').textContent = '📦 Tracking #: ' + data.shipment.trackingNumber;
+      ['senderName','senderPhone','receiverName','receiverPhone','receiverEmail',
+       'weight','origin','destination','estimatedDelivery','description'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
       loadShipments();
     } else {
       alert('Error: ' + data.message);
@@ -227,17 +240,18 @@
   }
 
   async function loadShipments() {
-    const res = await fetch('/api/shipments');
-    const data = await res.json();
     const tbody = document.getElementById('shipmentsTable');
-    if (!data.shipments.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">No shipments yet. Create one above!</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.shipments.map(s => {
-      const statusClass = s.status.replace(/ /g, '-');
-      const date = new Date(s.createdAt).toLocaleDateString();
-      return `
+    try {
+      const res = await fetch('/api/shipments');
+      const data = await res.json();
+      if (!data.shipments || !data.shipments.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">No shipments found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.shipments.map(s => {
+        const statusClass = s.status.replace(/ /g, '-');
+        const date = new Date(s.createdAt).toLocaleDateString();
+        return `
         <tr>
           <td><strong>${s.trackingNumber}</strong></td>
           <td>${s.senderName}</td>
@@ -251,9 +265,11 @@
               <button style="background:#e94560;color:white;" onclick="deleteShipment('${s._id}')">Delete</button>
             </div>
           </td>
-        </tr>
-      `;
-    }).join('');
+        </tr>`;
+      }).join('');
+    } catch(err) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:red;padding:20px;">Failed to load shipments</td></tr>';
+    }
   }
 
   function openUpdate(id, currentStatus) {
@@ -291,18 +307,20 @@
     loadShipments();
   }
 </script>
+
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
 (function(){
 var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
 s1.async=true;
-s1.src='https://embed.tawk.to/6a1e1cebe29f411c2ce86c48/1jq2q1uct';
+s1.src='https://embed.tawk.to/6a1e1cebe29f411c2ce86c48/1jq2qluct';
 s1.charset='UTF-8';
 s1.setAttribute('crossorigin','*');
 s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
+
 </body>
 </html>
